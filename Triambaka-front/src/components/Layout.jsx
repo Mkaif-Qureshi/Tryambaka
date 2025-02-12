@@ -4,12 +4,14 @@ import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { LayoutDashboard, Menu, Stamp, ShieldCheck, Route, Home as HomeIcon } from "lucide-react"
+import { LayoutDashboard, Menu, Stamp, ShieldCheck, Route, Home as HomeIcon, Wallet } from "lucide-react"
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip"
+import detectEthereumProvider from "@metamask/detect-provider"
 
 const Layout = ({ children }) => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-    const [isLoggedIn, setIsLoggedIn] = useState(false)
+    const [isConnected, setIsConnected] = useState(false)
+    const [userAddress, setUserAddress] = useState("")
     const [isNavbarVisible, setIsNavbarVisible] = useState(true)
     const [lastScrollY, setLastScrollY] = useState(0)
 
@@ -21,8 +23,24 @@ const Layout = ({ children }) => {
         { name: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
     ]
 
-    const handleLoginLogout = () => {
-        setIsLoggedIn(!isLoggedIn)
+    const connectWallet = async () => {
+        const provider = await detectEthereumProvider()
+        if (provider) {
+            try {
+                const accounts = await provider.request({ method: "eth_requestAccounts" })
+                setIsConnected(true)
+                setUserAddress(accounts[0])
+            } catch (error) {
+                console.error("User denied account access or error occurred:", error)
+            }
+        } else {
+            console.error("MetaMask not detected")
+        }
+    }
+
+    const disconnectWallet = () => {
+        setIsConnected(false)
+        setUserAddress("")
     }
 
     useEffect(() => {
@@ -71,9 +89,38 @@ const Layout = ({ children }) => {
                             </div>
                         </div>
                         <div className="flex items-center space-x-4">
-                            <Button onClick={handleLoginLogout} variant="outline">
-                                {isLoggedIn ? "Logout" : "Login"}
-                            </Button>
+                            {isConnected ? (
+                                <div className="relative group">
+                                    <button className="flex items-center space-x-2">
+                                        <img
+                                            src={`https://avatars.dicebear.com/api/identicon/${userAddress}.svg`}
+                                            alt="Profile"
+                                            className="h-8 w-8 rounded-full"
+                                        />
+                                    </button>
+                                    <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 hidden group-hover:block">
+                                        <div className="py-1">
+                                            <Link
+                                                to={`/profile/${userAddress}`}
+                                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                            >
+                                                View Profile
+                                            </Link>
+                                            <button
+                                                onClick={disconnectWallet}
+                                                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                            >
+                                                Disconnect
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <Button onClick={connectWallet} variant="outline" className="flex items-center gap-2">
+                                    <Wallet className="h-4 w-4" /> {/* Wallet icon */}
+                                    Connect 
+                                </Button>
+                            )}
                             <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
                                 <SheetTrigger asChild className="md:hidden">
                                     <Button variant="outline" size="icon">
