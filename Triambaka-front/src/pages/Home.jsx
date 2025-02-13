@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
-import { ArrowRight, Upload, Shield, Database, Lock, Globe, Cpu, GitBranch } from "lucide-react"
+import { ArrowRight, Upload, Shield, Database, Lock, Globe, Cpu, GitBranch  } from "lucide-react"
 import { motion } from "framer-motion"
 import Particles from "react-tsparticles"
 import { loadSlim } from "tsparticles-slim" // Use the slim version for better performance
@@ -189,8 +189,8 @@ const Home = () => {
                         },
                         {
                             icon: Cpu,
-                            title: "AI-Powered Analysis",
-                            description: "Advanced algorithms detect even the slightest modifications to your content.",
+                            title: "Blockchain-Powered Provenance & Ownership",
+                            description: "Immutable smart contracts link assets to blockchain records, ensuring verifiable time-stamped proof of existence.",
                         },
                         {
                             icon: GitBranch,
@@ -218,7 +218,7 @@ const Home = () => {
                 </div>
             </motion.section>
 
-            {/* Testimonials Section */}
+            {/* Testimonials Section
             <motion.section
                 className="mt-24 max-w-6xl mx-auto px-4 bg-gray-50 rounded-xl p-8 relative z-10" // z-10 to ensure it's above the particles
                 initial="hidden"
@@ -234,7 +234,7 @@ const Home = () => {
                     </p>
                     <footer className="text-gray-600">- Sarah Johnson, Digital Rights Manager at TechCorp</footer>
                 </blockquote>
-            </motion.section>
+            </motion.section> */}
 
             {/* Stats Section */}
             <motion.section

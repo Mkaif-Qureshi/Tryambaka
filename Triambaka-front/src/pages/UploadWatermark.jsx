@@ -247,7 +247,7 @@ const UploadWatermark = () => {
             </div>
         </div>
     )
-}
+}   
 
 export default UploadWatermark
 

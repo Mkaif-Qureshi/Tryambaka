@@ -155,8 +155,8 @@ const Layout = ({ children }) => {
                 <main className="flex-grow container mx-auto px-4 py-8 mt-24">{children}</main>
 
                 {/* Footer */}
-                <footer className="bg-gray-100">
-                    <div className="container mx-auto px-4 py-6 text-center text-gray-600">
+                <footer className="bg-gray-100 z-20">
+                    <div className="container mx-auto px-4 py-6 text-center text-gray-600 relative ">
                         © 2024 Triambaka. All rights reserved.
                     </div>
                 </footer>
