@@ -5,6 +5,7 @@ import UploadWatermark from "./pages/UploadWatermark"
 import Verification from "./pages/Verification"
 import ProvenanceTracking from "./pages/ProvenanceTracking"
 import Dashboard from "./pages/Dashboard"
+import WatermarkEmbed from "./pages/WatermarkTest"
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
           <Route path="/verify" element={<Verification />} />
           <Route path="/provenance" element={<ProvenanceTracking />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/test" element={<WatermarkEmbed />} />
         </Routes>
       </Layout>
     </Router>

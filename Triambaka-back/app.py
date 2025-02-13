@@ -1,13 +1,13 @@
 from flask import Flask
+from flask_cors import CORS
 from routes.watermark import watermark_bp
 from routes.blockchain import blockchain_bp
-from database import init_db
 
 app = Flask(__name__)
 app.config.from_object("config.Config")
 
-# Initialize database
-init_db(app)
+# Enable CORS
+CORS(app)
 
 # Register blueprints (API routes)
 app.register_blueprint(watermark_bp, url_prefix="/api/watermark")
