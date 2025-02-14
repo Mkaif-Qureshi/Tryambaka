@@ -10,12 +10,26 @@ const Verification = () => {
     const [file, setFile] = useState(null)
     const [verificationStatus, setVerificationStatus] = useState(null)
 
+    // Handle file selection
     const handleFileChange = (event) => {
         setFile(event.target.files[0])
     }
 
+    // Drag over event to prevent default behavior
+    const handleDragOver = (event) => {
+        event.preventDefault()
+    }
+
+    // Drop event to handle file drop
+    const handleDrop = (event) => {
+        event.preventDefault()
+        if (event.dataTransfer.files.length > 0) {
+            setFile(event.dataTransfer.files[0])
+        }
+    }
+
+    // Simulate content verification
     const handleVerify = () => {
-        // Simulating verification process
         setTimeout(() => {
             setVerificationStatus(Math.random() > 0.5 ? "authentic" : "tampered")
         }, 1500)
@@ -27,7 +41,11 @@ const Verification = () => {
             <div className="space-y-6">
                 <div className="space-y-2">
                     <Label htmlFor="file-upload">Upload Content to Verify</Label>
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                    <div
+                        className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center"
+                        onDragOver={handleDragOver}
+                        onDrop={handleDrop}
+                    >
                         <Input
                             id="file-upload"
                             type="file"
@@ -69,4 +87,3 @@ const Verification = () => {
 }
 
 export default Verification
-
