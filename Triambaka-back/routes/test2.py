@@ -1,7 +1,9 @@
-from flask import Blueprint, request, jsonify, send_file, after_this_request
+from flask import Blueprint, Flask, request, jsonify, send_file, make_response, after_this_request
 import cv2
 import numpy as np
 from scipy.fftpack import dct, idct
+from PIL import Image
+import json
 import os
 import tempfile
 import logging
@@ -10,8 +12,7 @@ import logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-
-watermark_bp = Blueprint("watermark", __name__)
+test_bp = Blueprint("test", __name__)
 
 # Create a 'temp' directory in your project folder
 temp_dir = os.path.join(os.getcwd(), 'temp')
@@ -132,7 +133,7 @@ def extract_watermark(input_path, key, delta=None):
     # Calculate BER between expected scrambled watermark and extracted scrambled watermark.
     return np.mean(expected_wm != extracted_wm)
 
-@watermark_bp.route('/embed', methods=['POST'])
+@test_bp.route('/embed', methods=['POST'])
 def embed():
     try:
         if 'image' not in request.files:
@@ -181,3 +182,4 @@ def embed():
         return response
     except Exception as e:
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
+

@@ -10,11 +10,12 @@ const UploadWatermark = () => {
     const [originalImageUrl, setOriginalImageUrl] = useState(null)
     const [keyValue, setKeyValue] = useState("12345")
     const [delta, setDelta] = useState("7.75")
-    const [result, setResult] = useState(null)
+    const [watermarkedImageUrl, setWatermarkedImageUrl] = useState(null)
     const [loading, setLoading] = useState(false)
     const [showExpected, setShowExpected] = useState(false)
     const [errorMessage, setErrorMessage] = useState("")
     const [ber, setBer] = useState(null)
+    const [expectedWatermark, setExpectedWatermark] = useState(null)
 
     const fileInputRef = useRef(null)
 
@@ -25,6 +26,7 @@ const UploadWatermark = () => {
             setOriginalImageUrl(URL.createObjectURL(selectedFile))
             setErrorMessage("")
             setBer(null)
+            setWatermarkedImageUrl(null)
         }
     }
 
@@ -36,16 +38,18 @@ const UploadWatermark = () => {
             setOriginalImageUrl(URL.createObjectURL(droppedFile))
             setErrorMessage("")
             setBer(null)
+            setWatermarkedImageUrl(null)
         }
     }
 
     const handleSubmit = async (event) => {
         event.preventDefault()
         setLoading(true)
-        setResult(null)
+        setWatermarkedImageUrl(null)
         setShowExpected(false)
         setErrorMessage("")
         setBer(null)
+        setExpectedWatermark(null)
 
         if (!file) {
             setErrorMessage("Please upload a file.")
@@ -54,40 +58,40 @@ const UploadWatermark = () => {
         }
 
         try {
-            const reader = new FileReader()
-            reader.onloadend = async () => {
-                const base64Image = reader.result.split(",")[1]
+            const formData = new FormData()
+            formData.append("image", file)
+            formData.append("key", keyValue)
+            formData.append("delta", delta)
 
-                const payload = {
-                    image: base64Image,
-                    key: Number.parseInt(keyValue, 10),
-                    delta: Number.parseFloat(delta),
-                }
+            const response = await fetch("http://127.0.0.1:5000/api/watermark/embed", {
+                method: "POST",
+                body: formData,
+            })
 
-                const response = await fetch("http://127.0.0.1:5000/api/watermark/embed", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify(payload),
-                })
-
-                const data = await response.json()
-
-                if (!response.ok) {
-                    if (data.error === "The image is already watermarked.") {
-                        setErrorMessage(data.error)
-                        setBer(data.BER)
-                    } else {
-                        throw new Error(data.error || "Failed to process the image.")
-                    }
+            if (!response.ok) {
+                const errorData = await response.json()
+                if (errorData.error === "The image is already watermarked.") {
+                    setErrorMessage(errorData.error)
+                    setBer(errorData.BER)
                 } else {
-                    setResult(data)
-                    setBer(data.BER)
+                    throw new Error(errorData.error || "Failed to process the image.")
+                }
+            } else {
+                const blob = await response.blob()
+                const watermarkedUrl = URL.createObjectURL(blob)
+                setWatermarkedImageUrl(watermarkedUrl)
+
+                // Extract metadata from headers
+                const expectedWm = response.headers.get("X-Expected-Watermark")
+                const berValue = response.headers.get("X-BER")
+
+                if (expectedWm) {
+                    setExpectedWatermark(JSON.parse(expectedWm))
+                }
+                if (berValue) {
+                    setBer(parseFloat(berValue))
                 }
             }
-
-            reader.readAsDataURL(file)
         } catch (error) {
             console.error(error)
             setErrorMessage(error.message)
@@ -96,9 +100,9 @@ const UploadWatermark = () => {
         }
     }
 
-    const downloadFile = (dataUrl, filename) => {
+    const downloadFile = (url, filename) => {
         const link = document.createElement("a")
-        link.href = dataUrl
+        link.href = url
         link.download = filename
         document.body.appendChild(link)
         link.click()
@@ -184,7 +188,7 @@ const UploadWatermark = () => {
                                 <h2 className="text-xl font-semibold mb-4">Original Image</h2>
                                 <div className="relative h-64 rounded-lg overflow-hidden group">
                                     <img
-                                        src={originalImageUrl || "/placeholder.svg"}
+                                        src={originalImageUrl}
                                         alt="Original"
                                         className="w-full h-full object-cover rounded-lg"
                                     />
@@ -198,19 +202,17 @@ const UploadWatermark = () => {
                                 </div>
                             </div>
                         )}
-                        {result && result.watermarked_image && (
+                        {watermarkedImageUrl && (
                             <div>
                                 <h2 className="text-xl font-semibold mb-4">Watermarked Image</h2>
                                 <div className="relative h-64 rounded-lg overflow-hidden group">
                                     <img
-                                        src={`data:image/jpeg;base64,${result.watermarked_image}`}
+                                        src={watermarkedImageUrl}
                                         alt="Watermarked"
                                         className="w-full h-full object-cover rounded-lg"
                                     />
                                     <button
-                                        onClick={() =>
-                                            downloadFile(`data:image/jpeg;base64,${result.watermarked_image}`, "watermarked_image.jpg")
-                                        }
+                                        onClick={() => downloadFile(watermarkedImageUrl, "watermarked_image.png")}
                                         className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                                         title="Download Watermarked"
                                     >
@@ -228,17 +230,21 @@ const UploadWatermark = () => {
                                 </div>
                             </div>
                         )}
-                        {result && !result.error && (
+                        {watermarkedImageUrl && !errorMessage && (
                             <div className="mt-8 p-4 bg-green-100 text-green-700 rounded-lg">
                                 <p>Watermark embedded successfully!</p>
                                 {ber !== null && <p className="mt-2">Bit Error Rate (BER): {ber.toFixed(4)}</p>}
-                                <button onClick={() => setShowExpected(!showExpected)} className="mt-2 text-blue-600 hover:underline">
-                                    {showExpected ? "Hide" : "Show"} Expected Watermark
-                                </button>
-                                {showExpected && (
-                                    <pre className="bg-white p-4 rounded-md mt-2 overflow-auto max-h-60 text-sm">
-                                        {JSON.stringify(result.expected_watermark, null, 2)}
-                                    </pre>
+                                {expectedWatermark && (
+                                    <>
+                                        <button onClick={() => setShowExpected(!showExpected)} className="mt-2 text-blue-600 hover:underline">
+                                            {showExpected ? "Hide" : "Show"} Expected Watermark
+                                        </button>
+                                        {showExpected && (
+                                            <pre className="bg-white p-4 rounded-md mt-2 overflow-auto max-h-60 text-sm">
+                                                {JSON.stringify(expectedWatermark, null, 2)}
+                                            </pre>
+                                        )}
+                                    </>
                                 )}
                             </div>
                         )}
@@ -247,7 +253,6 @@ const UploadWatermark = () => {
             </div>
         </div>
     )
-}   
+}
 
 export default UploadWatermark
-

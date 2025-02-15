@@ -177,7 +177,7 @@ def distinguish_watermarked_image(image_path, key, delta=None, threshold=0.2):
 
 # --- Example usage ---
 if __name__ == "__main__":
-    input_image = 'input2.jpg'
+    input_image = 'input.png'
     watermarked_image = 'watermarked.png'
     key = 12345
     delta_value = 7.75
@@ -193,3 +193,4 @@ if __name__ == "__main__":
     # Check non-watermarked image
     print("\nChecking non-watermarked image:")
     distinguish_watermarked_image(input_image, key, delta=delta_value)
+
