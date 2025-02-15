@@ -5,6 +5,7 @@ from scipy.fftpack import dct, idct
 import os
 import tempfile
 import logging
+import hashlib
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
@@ -16,6 +17,17 @@ watermark_bp = Blueprint("watermark", __name__)
 # Create a 'temp' directory in your project folder
 temp_dir = os.path.join(os.getcwd(), 'temp')
 os.makedirs(temp_dir, exist_ok=True)
+
+
+def calculate_image_hash(image_path):
+    """
+    Calculates the SHA-256 hash of an image file.
+    """
+    hasher = hashlib.sha256()
+    with open(image_path, 'rb') as img_file:
+        while chunk := img_file.read(8192):
+            hasher.update(chunk)
+    return hasher.hexdigest()
 
 
 def scramble_watermark(watermark, perm_key):
@@ -167,10 +179,15 @@ def embed():
         
         embed_watermark(input_path, output_path, key, delta)
         new_ber = extract_watermark(output_path, key, delta)
+
+        # Calculate hash of the watermarked image
+        image_hash = calculate_image_hash(output_path)
         
         response = send_file(output_path, mimetype='image/png', as_attachment=True, download_name='watermarked.png')
         response.headers['X-BER'] = str(new_ber)
+        response.headers['X-Image-Hash'] = image_hash
         print(new_ber)
+        print(image_hash)
 
         @after_this_request
         def cleanup(response):
