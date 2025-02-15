@@ -7,6 +7,16 @@ import { ArrowRight, Upload, Shield, Database, Lock, Globe, Cpu, GitBranch  } fr
 import { motion } from "framer-motion"
 import Particles from "react-tsparticles"
 import { loadSlim } from "tsparticles-slim" // Use the slim version for better performance
+// import { motion } from "framer-motion";
+
+const steps = [
+    "Upload PDF",
+    "Watermark Generation",
+    "Watermark Embedding",
+    "Cryptographic Hashing & Signature",
+    "Added to Blockchain Ledger",
+    "Ready for Download ",
+];
 
 const Home = () => {
     const [mounted, setMounted] = useState(false)
@@ -237,6 +247,59 @@ const Home = () => {
             </motion.section> */}
 
             {/* Stats Section */}
+
+                <motion.section
+                className=" relative z-10 bg-gray-50 border-2 border-black rounded-2xl w-[100%] mx-auto min-h-[300px] flex justify-center items-center py-8 px-12 mt-16"
+            >
+                {/* Horizontal Line Animation */}
+                <motion.div
+                    className="absolute h-[4px] bg-black"
+                    initial={{ width: 0 }}
+                    animate={{ width: "76%" }}
+                    transition={{ duration: 2, ease: "easeInOut" }}
+                    style={{ top: "50%", left: "12%" }}
+                />
+
+                {/* Nodes + Vertical Lines + Text */}
+                <div className="flex w-[80%] justify-between relative">
+                    {steps.map((step, index) => (
+                        <div key={index} className="relative flex flex-col items-center">
+                            {/* Node (Circle) */}
+                            <div className="w-6 h-6 bg-black rounded-full absolute top-1/2 transform -translate-y-1/2" />
+                            
+                            {/* Vertical Line Animation */}
+                            <motion.div
+                                className="w-[2px] bg-black absolute"
+                                initial={{ height: 0 }}
+                                animate={{ height: "60px" }}
+                                transition={{ duration: 1, delay: index * 0.5 }}
+                                style={{
+                                    top: index % 2 === 0 ? "-70px" : "10px", // Adjust vertical positioning
+                                    left: "50%",
+                                }}
+                            />
+
+                            {/* Step Text */}
+                            <motion.p
+                                className="absolute text-lg font-semibold text-black text-center whitespace-nowrap"
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.5, delay: index * 0.3 }}
+                                style={{
+                                    top: index % 2 === 0 ? "-120px" : "80px", // Position text properly
+                                    left: "50%",
+                                    transform: "translateX(-50%)"
+                                }}
+                            >
+                                {step}
+                            </motion.p>
+                        </div>
+                    ))}
+                </div>
+            </motion.section>
+
+
+
             <motion.section
                 className="mt-24 max-w-6xl mx-auto px-4 relative z-10" // z-10 to ensure it's above the particles
                 initial="hidden"
@@ -268,13 +331,15 @@ const Home = () => {
 
             {/* CTA Section */}
             <motion.section
-                className="text-center mt-24 py-16 bg-black relative z-10" // z-10 to ensure it's above the particles
+                className="text-center mt-24 py-4 bg-black relative z-10 rounded-2xl w-[100%] mx-auto min-h-[300px]  items-center " // z-10 to ensure it's above the particles
                 initial="hidden"
                 animate={mounted ? "visible" : "hidden"}
                 variants={fadeIn}
                 transition={{ duration: 0.5, delay: 1 }}
             >
-                <h2 className="text-3xl font-bold mb-6 text-white">Ready to secure your digital future?</h2>
+                <div className="flex flex-col items-start ml-14 mb-20 mt-4 ">
+                <h2 className="text-3xl font-bold  text-white">Secure your digital work!</h2>
+                <h6 className="text-gray-500 font-normal mb-6">Trust us, we got you!</h6>
                 <Button
                     asChild
                     size="lg"
@@ -285,7 +350,27 @@ const Home = () => {
                         <ArrowRight className="ml-2 h-5 w-5" />
                     </Link>
                 </Button>
+                <div className=" absolute right-20 top-[20%] flex flex-col text-gray-500 space-y-2 ">
+                            <h6>About</h6>
+                            <h6>Work</h6>
+                            <h6>Contact</h6>
+                            <h6>Pricing</h6>
+                            <h6>FAQ's</h6>
+                            <h6>404</h6>
+                            {/* <h6>Testimonials</h6> */}
+                </div>
+                </div>
+                <div className=" w-full flex justify-center mt-48">
+
+                <hr style={{ border: "1px solid grey", width: "95%" }} />;
+                </div>
+                <div className="ml-14 flex text-left text-gray-500 space-x-5  w-full">
+                    <h6>© 2025 reserved</h6>
+                    <h6>All rights reserved </h6>
+                    <h6>Terms of services</h6>
+                </div>
             </motion.section>
+
         </div>
     )
 }
