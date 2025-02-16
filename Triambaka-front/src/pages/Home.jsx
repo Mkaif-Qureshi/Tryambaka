@@ -330,46 +330,7 @@ const Home = () => {
             </motion.section>
 
             {/* CTA Section */}
-            <motion.section
-                className="text-center mt-24 py-4 bg-black relative z-10 rounded-2xl w-[100%] mx-auto min-h-[300px]  items-center " // z-10 to ensure it's above the particles
-                initial="hidden"
-                animate={mounted ? "visible" : "hidden"}
-                variants={fadeIn}
-                transition={{ duration: 0.5, delay: 1 }}
-            >
-                <div className="flex flex-col items-start ml-14 mb-20 mt-4 ">
-                <h2 className="text-3xl font-bold  text-white">Secure your digital work!</h2>
-                <h6 className="text-gray-500 font-normal mb-6">Trust us, we got you!</h6>
-                <Button
-                    asChild
-                    size="lg"
-                    className="bg-white text-black rounded-full px-8 py-6 text-lg font-semibold transition-all duration-300 ease-in-out hover:bg-gray-100"
-                >
-                    <Link to="/upload">
-                        Get Started Now
-                        <ArrowRight className="ml-2 h-5 w-5" />
-                    </Link>
-                </Button>
-                <div className=" absolute right-20 top-[20%] flex flex-col text-gray-500 space-y-2 ">
-                            <h6>About</h6>
-                            <h6>Work</h6>
-                            <h6>Contact</h6>
-                            <h6>Pricing</h6>
-                            <h6>FAQ's</h6>
-                            <h6>404</h6>
-                            {/* <h6>Testimonials</h6> */}
-                </div>
-                </div>
-                <div className=" w-full flex justify-center mt-48">
-
-                <hr style={{ border: "1px solid grey", width: "95%" }} />;
-                </div>
-                <div className="ml-14 flex text-left text-gray-500 space-x-5  w-full">
-                    <h6>© 2025 reserved</h6>
-                    <h6>All rights reserved </h6>
-                    <h6>Terms of services</h6>
-                </div>
-            </motion.section>
+            
 
         </div>
     )
