@@ -13,6 +13,7 @@ CORS(app)
 # Register blueprints (API routes)
 app.register_blueprint(watermark_bp, url_prefix="/api/watermark")
 app.register_blueprint(verify_bp, url_prefix="/api/watermark")
+# app.register_blueprint(verify_bp, url_prefix="/api/verify")
 app.register_blueprint(blockchain_bp, url_prefix="/api/blockchain")
 
 

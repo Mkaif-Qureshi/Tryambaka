@@ -1,86 +1,103 @@
-"use client"
+"use client";
 
-import { useState, useRef } from "react"
-import { Upload, Download, AlertCircle, CheckCircle } from "lucide-react"
+import { useState, useRef } from "react";
+import { Upload, AlertCircle, CheckCircle } from "lucide-react";
 
-const Spinner = () => <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-white"></div>
+const Spinner = () => (
+    <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-white"></div>
+);
 
 const VerifyWatermark = () => {
-    const [file, setFile] = useState(null)
-    const [originalImageUrl, setOriginalImageUrl] = useState(null)
-    const [keyValue, setKeyValue] = useState("12345")
-    const [delta, setDelta] = useState("1.0")
-    const [extractedWatermark, setExtractedWatermark] = useState(null)
-    const [loading, setLoading] = useState(false)
-    const [errorMessage, setErrorMessage] = useState("")
+    const [file, setFile] = useState(null);
+    const [originalImageUrl, setOriginalImageUrl] = useState(null);
+    const [keyValue, setKeyValue] = useState("12345");
+    const [delta, setDelta] = useState("1.0");
+    const [extractedWatermarkData, setExtractedWatermarkData] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("");
 
-    const fileInputRef = useRef(null)
+    const fileInputRef = useRef(null);
 
     const handleFileChange = (event) => {
         if (event.target.files && event.target.files.length > 0) {
-            const selectedFile = event.target.files[0]
-            setFile(selectedFile)
-            setOriginalImageUrl(URL.createObjectURL(selectedFile))
-            setErrorMessage("")
-            setExtractedWatermark(null)
+            const selectedFile = event.target.files[0];
+            setFile(selectedFile);
+            setOriginalImageUrl(URL.createObjectURL(selectedFile));
+            setErrorMessage("");
+            setExtractedWatermarkData(null);
         }
-    }
+    };
 
     const handleDrop = (event) => {
-        event.preventDefault()
+        event.preventDefault();
         if (event.dataTransfer.files && event.dataTransfer.files.length > 0) {
-            const droppedFile = event.dataTransfer.files[0]
-            setFile(droppedFile)
-            setOriginalImageUrl(URL.createObjectURL(droppedFile))
-            setErrorMessage("")
-            setExtractedWatermark(null)
+            const droppedFile = event.dataTransfer.files[0];
+            setFile(droppedFile);
+            setOriginalImageUrl(URL.createObjectURL(droppedFile));
+            setErrorMessage("");
+            setExtractedWatermarkData(null);
         }
-    }
+    };
 
     const handleSubmit = async (event) => {
-        event.preventDefault()
-        setLoading(true)
-        setExtractedWatermark(null)
-        setErrorMessage("")
+        event.preventDefault();
+        setLoading(true);
+        setExtractedWatermarkData(null);
+        setErrorMessage("");
 
         if (!file) {
-            setErrorMessage("Please upload a file.")
-            setLoading(false)
-            return
+            setErrorMessage("Please upload a file.");
+            setLoading(false);
+            return;
         }
 
         try {
-            const formData = new FormData()
-            formData.append("image", file)
-            formData.append("key", keyValue)
-            formData.append("delta", delta)
+            const formData = new FormData();
+            formData.append("image", file);
+            formData.append("key", keyValue);
+            formData.append("delta", delta);
 
-            const response = await fetch("http://127.0.0.1:5000/api/watermark/extract", {
+            const response = await fetch("http://127.0.0.1:5000/api/watermark/verify", {
                 method: "POST",
                 body: formData,
-            })
+            });
+
+            console.log("Response:", response); // Debugging
 
             if (!response.ok) {
-                const errorData = await response.json()
-                setErrorMessage(errorData.error || "Failed to extract watermark.")
+                const contentType = response.headers.get("content-type");
+                let errorMessage = "Failed to extract watermark.";
+
+                if (response.status === 404) {
+                    errorMessage = "API endpoint not found. Check the backend route.";
+                } else if (contentType && contentType.includes("application/json")) {
+                    const errorData = await response.json();
+                    errorMessage = errorData.error || errorMessage;
+                } else {
+                    const errorText = await response.text();
+                    console.error("Server Error:", errorText);
+                    errorMessage = "Unexpected server response. Check console.";
+                }
+
+                setErrorMessage(errorMessage);
             } else {
-                const data = await response.json()
-                setExtractedWatermark(data.watermark)
+                const data = await response.json();
+                setExtractedWatermarkData(data); // Set the response data
             }
         } catch (error) {
-            console.error(error)
-            setErrorMessage(error.message)
+            console.error("Network error:", error);
+            setErrorMessage("Network error. Please check your connection.");
         } finally {
-            setLoading(false)
+            setLoading(false);
         }
-    }
+    };
 
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col justify-center items-center p-4">
             <div className="w-full max-w-4xl bg-white rounded-2xl shadow-xl overflow-hidden">
                 <div className="md:flex">
                     <div className="md:w-1/2 p-8">
-                        <h1 className="text-4xl font-bold mb-6">Verify Watermark</h1>
+                        <h1 className="text-4xl font-bold mb-6">Verify Content</h1>
                         <p className="text-gray-600 mb-8">Extract and validate embedded watermarks with ease.</p>
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <div
@@ -139,7 +156,7 @@ const VerifyWatermark = () => {
                                         <span>Processing...</span>
                                     </div>
                                 ) : (
-                                    "Extract Watermark"
+                                    "Verify Watermark"
                                 )}
                             </button>
                         </form>
@@ -148,19 +165,26 @@ const VerifyWatermark = () => {
                         {originalImageUrl && (
                             <div className="mb-8">
                                 <h2 className="text-xl font-semibold mb-4">Uploaded Image</h2>
-                                <img
-                                    src={originalImageUrl}
-                                    alt="Uploaded"
-                                    className="w-full h-64 object-cover rounded-lg"
-                                />
+                                <img src={originalImageUrl} alt="Uploaded" className="w-full h-64 object-cover rounded-lg" />
                             </div>
                         )}
-                        {extractedWatermark && (
-                            <div className="mt-8 p-4 bg-green-100 text-green-700 rounded-lg">
-                                <CheckCircle className="w-6 h-6 inline-block mr-2" />
-                                <span>Extracted Watermark: {extractedWatermark}</span>
-                            </div>
-                        )}
+                       {extractedWatermarkData && (
+    <div className={`mt-8 p-4 rounded-lg ${extractedWatermarkData.ber < 0.3 ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+        {extractedWatermarkData.ber < 0.3 ? (
+            <CheckCircle className="w-6 h-6 inline-block mr-2" />
+        ) : (
+            <AlertCircle className="w-6 h-6 inline-block mr-2" />
+        )}
+        <div>
+            <h3 className="font-bold text-lg mb-2">
+                {extractedWatermarkData.ber < 0.3 ? "✔ Verified Content" : "❌ Not Verified"}
+            </h3>
+            <p className="font-bold">Bit Error Rate (BER): {extractedWatermarkData.ber}</p>
+            <p className="break-all">Image Hash: {extractedWatermarkData.image_hash}</p>
+        </div>
+    </div>
+)}
+
                         {errorMessage && (
                             <div className="mt-8 p-4 bg-yellow-100 text-yellow-700 rounded-lg flex items-start">
                                 <AlertCircle className="w-5 h-5 mr-2 flex-shrink-0 mt-0.5" />
@@ -171,7 +195,7 @@ const VerifyWatermark = () => {
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default VerifyWatermark
+export default VerifyWatermark;
