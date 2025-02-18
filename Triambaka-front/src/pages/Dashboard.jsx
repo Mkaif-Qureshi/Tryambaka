@@ -34,36 +34,36 @@ const Dashboard = () => {
     // PDF generation function
     const generatePDF = () => {
         const doc = new jsPDF();
-    
+
         // Page dimensions
         const pageWidth = doc.internal.pageSize.getWidth();
-    
+
         // Add logo and text in a single line
-        const logoUrl = '/logo-noback.png';
-        const logoWidth = 30; // Width of the logo
-        const logoHeight = 20; // Height of the logo
-    
+        const logoUrl = '/logo.png';
+        const logoWidth = 10; // Width of the logo
+        const logoHeight = 10; // Height of the logo
+
         // Calculate the total width of the logo + text
         doc.setFontSize(17);
         doc.setFont("helvetica", "bold");
         const text = "Trimbaka";
         const textWidth = doc.getStringUnitWidth(text) * doc.internal.getFontSize() / doc.internal.scaleFactor;
-        
+
         // Keep original total width calculation (without spacing adjustments)
         const totalWidth = logoWidth + textWidth;
-    
+
         // Calculate the starting X position to center the logo and text
         const startX = (pageWidth - totalWidth) / 2;
-    
+
         // Add the logo (position remains unchanged)
         const logoY = 20;
         doc.addImage(logoUrl, 'PNG', startX, logoY, logoWidth, logoHeight);
-    
+
         // Add text with LEFT SHIFT adjustment
-        const textXShift = -10; // Negative value moves text LEFT toward the logo
+        const textXShift = 6; // Negative value moves text LEFT toward the logo
         const textX = startX + logoWidth + textXShift;
         doc.text(text, textX, logoY + logoHeight / 2 + 1.5);
-    
+
         // Add address below the logo and text
         doc.setFontSize(8);
         doc.setFont("helvetica", "normal");
@@ -71,7 +71,7 @@ const Dashboard = () => {
         const addressTextWidth = doc.getStringUnitWidth(addressText) * doc.internal.getFontSize() / doc.internal.scaleFactor;
         const addressX = (pageWidth - addressTextWidth) / 2;
         doc.text(addressText, addressX, logoY + logoHeight + 5);
-    
+
 
         // Report title (centered)
         doc.setFontSize(18);
@@ -90,7 +90,7 @@ const Dashboard = () => {
                 ["Email", userDetails.email],
             ],
             theme: "grid",
-            headStyles: { 
+            headStyles: {
                 fillColor: [41, 128, 185],
                 textColor: 255,
                 fontStyle: "bold"
@@ -104,14 +104,14 @@ const Dashboard = () => {
             },
         });
 
-        
+
         // Transactions table
         autoTable(doc, {
             startY: logoY + logoHeight + 60, // Adjusted to bring the table closer
             head: [["ID", "Date", "Hash Code", "Status"]],
             body: transactions.map(t => [t.id, t.date, t.hash, t.status]),
             theme: "grid",
-            headStyles: { 
+            headStyles: {
                 fillColor: [41, 128, 185],
                 textColor: 255,
                 fontStyle: "bold"
@@ -141,13 +141,13 @@ const Dashboard = () => {
 
         doc.save("user_transaction_report.pdf");
     };
-    
+
     return (
         <div className="space-y-8 p-6">
             {/* Header with Download Button */}
             <div className="flex justify-between items-center">
                 <h1 className="text-3xl font-bold">Dashboard</h1>
-                <Button 
+                <Button
                     onClick={generatePDF}
                     variant="outline"
                     className="large"
