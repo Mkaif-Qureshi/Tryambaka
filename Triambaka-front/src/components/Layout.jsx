@@ -71,8 +71,9 @@ const Layout = ({ children }) => {
                         }`}
                 >
                     <nav className="container mx-auto px-4 py-4 flex justify-between items-center">
-                        <Link to="/" className="text-2xl font-bold text-primary">
-                            Triambaka
+                        <Link to="/" className="flex items-center text-2xl font-bold text-primary">
+                            <img src="/logo.png" alt="Logo" className="h-14 w-14 mr-1" />
+                            Tryambaka
                         </Link>
                         <div className="flex-1 flex justify-center">
                             <div className="hidden md:flex space-x-4">
@@ -118,7 +119,7 @@ const Layout = ({ children }) => {
                             ) : (
                                 <Button onClick={connectWallet} variant="outline" className="flex items-center gap-2">
                                     <Wallet className="h-4 w-4" /> {/* Wallet icon */}
-                                    Connect 
+                                    Connect
                                 </Button>
                             )}
                             <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
@@ -157,7 +158,7 @@ const Layout = ({ children }) => {
                 {/* Footer */}
                 <footer className="bg-gray-100 z-20">
                     <div className="container mx-auto px-4 py-6 text-center text-gray-600 relative ">
-                        © 2024 Triambaka. All rights reserved.
+                        © 2024 Tryambaka . All rights reserved.
                     </div>
                 </footer>
             </div>

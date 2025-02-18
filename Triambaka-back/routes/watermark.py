@@ -177,8 +177,13 @@ def embed():
         with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as temp_output:
             output_path = temp_output.name
         
-        embed_watermark(input_path, output_path, key, delta)
-        new_ber = extract_watermark(output_path, key, delta)
+        # Adjust delta until BER is below threshold
+        while ber >= threshold:
+            embed_watermark(input_path, output_path, key, delta)
+            new_ber = extract_watermark(output_path, key, delta)
+            if new_ber < threshold:
+                break
+            delta += 0.25
 
         # Calculate hash of the watermarked image
         image_hash = calculate_image_hash(output_path)
@@ -186,6 +191,7 @@ def embed():
         response = send_file(output_path, mimetype='image/png', as_attachment=True, download_name='watermarked.png')
         response.headers['X-BER'] = str(new_ber)
         response.headers['X-Image-Hash'] = image_hash
+        print(delta)
         print(new_ber)
         print(image_hash)
 
