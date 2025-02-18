@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react" // Added useRef
 import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
@@ -14,6 +14,8 @@ const Layout = ({ children }) => {
     const [userAddress, setUserAddress] = useState("")
     const [isNavbarVisible, setIsNavbarVisible] = useState(true)
     const [lastScrollY, setLastScrollY] = useState(0)
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false) // State for dropdown visibility
+    const dropdownRef = useRef(null) // Ref for the dropdown
 
     const navItems = [
         { name: "Home", path: "/", icon: HomeIcon },
@@ -41,7 +43,22 @@ const Layout = ({ children }) => {
     const disconnectWallet = () => {
         setIsConnected(false)
         setUserAddress("")
+        setIsDropdownOpen(false) // Close dropdown on disconnect
     }
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsDropdownOpen(false)
+            }
+        }
+
+        document.addEventListener("mousedown", handleClickOutside)
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside)
+        }
+    }, [])
 
     useEffect(() => {
         const handleScroll = () => {
@@ -90,30 +107,36 @@ const Layout = ({ children }) => {
                         </div>
                         <div className="flex items-center space-x-4">
                             {isConnected ? (
-                                <div className="relative group">
-                                    <button className="flex items-center space-x-2">
+                                <div className="relative" ref={dropdownRef}>
+                                    <button
+                                        onClick={() => setIsDropdownOpen(!isDropdownOpen)} // Toggle dropdown on click
+                                        className="flex items-center space-x-2"
+                                    >
                                         <img
                                             src={`https://avatars.dicebear.com/api/identicon/${userAddress}.svg`}
                                             alt="Profile"
                                             className="h-8 w-8 rounded-full"
                                         />
                                     </button>
-                                    <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 hidden group-hover:block">
-                                        <div className="py-1">
-                                            <Link
-                                                to={`/profile/${userAddress}`}
-                                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                            >
-                                                View Profile
-                                            </Link>
-                                            <button
-                                                onClick={disconnectWallet}
-                                                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                            >
-                                                Disconnect
-                                            </button>
+                                    {isDropdownOpen && (
+                                        <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
+                                            <div className="py-1">
+                                                <Link
+                                                    to={`/profile/${userAddress}`}
+                                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                                    onClick={() => setIsDropdownOpen(false)} // Close dropdown on link click
+                                                >
+                                                    View Profile
+                                                </Link>
+                                                <button
+                                                    onClick={disconnectWallet}
+                                                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                                >
+                                                    Disconnect
+                                                </button>
+                                            </div>
                                         </div>
-                                    </div>
+                                    )}
                                 </div>
                             ) : (
                                 <Button onClick={connectWallet} variant="outline" className="flex items-center gap-2">
