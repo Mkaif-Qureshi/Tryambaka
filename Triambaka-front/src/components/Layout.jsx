@@ -7,6 +7,8 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { LayoutDashboard, Menu, Stamp, ShieldCheck, Route, Home as HomeIcon, Wallet } from "lucide-react"
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip"
 import detectEthereumProvider from "@metamask/detect-provider"
+import Cookies from "js-cookie";
+
 
 const Layout = ({ children }) => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -26,25 +28,36 @@ const Layout = ({ children }) => {
     ]
 
     const connectWallet = async () => {
-        const provider = await detectEthereumProvider()
+        const provider = await detectEthereumProvider();
         if (provider) {
             try {
-                const accounts = await provider.request({ method: "eth_requestAccounts" })
-                setIsConnected(true)
-                setUserAddress(accounts[0])
+                const accounts = await provider.request({ method: "eth_requestAccounts" });
+                setIsConnected(true);
+                setUserAddress(accounts[0]);
+                Cookies.set("walletAddress", accounts[0], { expires: 1 }); // Store in cookies for 1 day
+    
+                // Log cookies to the console
+                console.log("Cookies after connecting:", Cookies.get());
             } catch (error) {
-                console.error("User denied account access or error occurred:", error)
+                console.error("User denied account access or error occurred:", error);
             }
         } else {
-            console.error("MetaMask not detected")
+            console.error("MetaMask not detected");
         }
-    }
-
+    };
+    
+    
     const disconnectWallet = () => {
-        setIsConnected(false)
-        setUserAddress("")
-        setIsDropdownOpen(false) // Close dropdown on disconnect
-    }
+        setIsConnected(false);
+        setUserAddress("");
+        setIsDropdownOpen(false);
+        Cookies.remove("walletAddress");
+    
+        // Log cookies after removing wallet session
+        console.log("Cookies after disconnecting:", Cookies.get());
+    };
+    
+    
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -59,6 +72,18 @@ const Layout = ({ children }) => {
             document.removeEventListener("mousedown", handleClickOutside)
         }
     }, [])
+
+    useEffect(() => {
+        const savedAddress = Cookies.get("walletAddress");
+        console.log("Cookies on mount:", Cookies.get()); // Log all cookies
+    
+        if (savedAddress) {
+            setIsConnected(true);
+            setUserAddress(savedAddress);
+        }
+    }, []);
+    
+    
 
     useEffect(() => {
         const handleScroll = () => {
