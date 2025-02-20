@@ -16,6 +16,28 @@ const steps = [
     "Ready for Download ",
 ];
 
+const firstRowImages = [
+    "/images/1.jpeg",
+    "/images/2.jpg",
+    "/images/3.jpg",
+    "/images/4.jpeg",
+    "/images/5.jpeg",
+    "/images/6.jpeg",
+    "/images/7.jpg",
+    "/images/8.jpeg",
+];
+
+const secondRowImages = [
+    "/images/9.jpeg",
+    "/images/10.jpg",
+    "/images/11.jpeg",
+    "/images/12.jpeg",
+    "/images/13.jpeg",
+    "/images/14.jpeg",
+    "/images/15.jpeg",
+    "/images/16.jpeg",
+];
+
 const Home = () => {
     const [mounted, setMounted] = useState(false)
 
@@ -174,6 +196,58 @@ const Home = () => {
                 </div>
             </motion.section>
 
+            <div className="relative flex flex-col gap-6 py-16 overflow-hidden bg-white">
+                <h2 className="text-3xl font-bold text-center mb-8">Lagecy Artworks</h2>
+                <div className="flex flex-col gap-8">
+                    {/* First Row - Scrolls Right to Left */}
+                    <div className="flex overflow-hidden whitespace-nowrap">
+                        <motion.div
+                            className="flex flex-nowrap"
+                            animate={{ x: ["0%", "-100%"] }}
+                            transition={{
+                                duration: 20,
+                                ease: "linear",
+                                repeat: Infinity,
+                            }}
+                        >
+                            {firstRowImages.concat(firstRowImages).map((src, index) => (
+                                <img
+                                    key={index}
+                                    src={src}
+                                    alt="scrolling"
+                                    className="h-60 w-80 object-cover border-2 border-black rounded-xl 
+                  filter grayscale hover:filter-none transition-all duration-300 flex-shrink-0 mr-4"
+                                />
+                            ))}
+                        </motion.div>
+                    </div>
+
+                    {/* Second Row - Scrolls Left to Right */}
+                    <div className="flex overflow-hidden whitespace-nowrap">
+                        <motion.div
+                            className="flex flex-nowrap"
+                            animate={{ x: ["-100%", "0%"] }}
+                            transition={{
+                                duration: 20,
+                                ease: "linear",
+                                repeat: Infinity,
+                            }}
+                        >
+                            {secondRowImages.concat(secondRowImages).map((src, index) => (
+                                <img
+                                    key={index}
+                                    src={src}
+                                    alt="scrolling"
+                                    className="h-60 w-80 object-cover border-2 border-black rounded-xl 
+                  filter grayscale hover:filter-none transition-all duration-300 flex-shrink-0 mr-4"
+                                />
+                            ))}
+                        </motion.div>
+                    </div>
+                </div>
+            </div>
+
+
             {/* Features Section */}
             <motion.section
                 className="mt-24 max-w-6xl mx-auto px-4 relative z-10" // z-10 to ensure it's above the particles
@@ -277,91 +351,6 @@ const Home = () => {
                     ))}
                 </div>
             </motion.section>
-
-
-
-            <div className="relative flex flex-col gap-8 py-12 overflow-hidden bg-white">
-    <div className="flex flex-col gap-8">
-        {/* First Row - Scrolls Right Continuously on Hover */}
-        <div className="flex overflow-hidden whitespace-nowrap">
-            <motion.div
-                className="flex flex-nowrap"
-                whileHover={{
-                    x: ["0%", "-100%"],
-                    transition: {
-                        duration: 20,
-                        ease: "linear",
-                        repeat: Infinity,
-                    },
-                }}
-            >
-                {[
-                    "/images/1.jpg",
-                    "/images/download (1).jpeg",
-                    "/images/5d3de097a14814f33c35a752ce8406fd.jpg",
-                    "/images/8c703d77e766e685af0aa63db4ea2035.jpg",
-                    "/images/8587d212c472f8f9cc19c1d8f6be5450.jpg",
-                ].concat([
-                    "/images/1.jpg",
-                    "/images/download (1).jpeg",
-                    "/images/5d3de097a14814f33c35a752ce8406fd.jpg",
-                    "/images/8c703d77e766e685af0aa63db4ea2035.jpg",
-                    "/images/8587d212c472f8f9cc19c1d8f6be5450.jpg",
-                ]).map((src, index) => (
-                    <img
-                        key={index}
-                        src={src}
-                        alt="scrolling"
-                        className="h-60 w-80 object-cover border-2 border-black rounded-xl 
-                                filter grayscale hover:filter-none transition-all duration-300 flex-shrink-0 mr-4"
-                    />
-                ))}
-            </motion.div>
-        </div>
-
-        {/* Second Row - Scrolls Left Continuously on Hover */}
-        <div className="flex overflow-hidden whitespace-nowrap">
-            <motion.div
-                className="flex flex-nowrap"
-                whileHover={{
-                    x: ["-100%", "0%"],
-                    transition: {
-                        duration: 20,
-                        ease: "linear",
-                        repeat: Infinity,
-                    },
-                }}
-            >
-                {[
-                    "/images/c4c561e785b763961fdcedb15728f7f6 - Copy.jpg",
-                    "/images/cf926fc2c834c8a3670b9dd09f8c57b1.jpg",
-                    "/images/download.jpeg",
-                    "/images/fb2d5dd6c47a350d78a54edd11094cf2.jpg",
-                    "/images/images (1).jpeg",
-                ].concat([
-                    "/images/c4c561e785b763961fdcedb15728f7f6 - Copy.jpg",
-                    "/images/cf926fc2c834c8a3670b9dd09f8c57b1.jpg",
-                    "/images/download.jpeg",
-                    "/images/fb2d5dd6c47a350d78a54edd11094cf2.jpg",
-                    "/images/images (1).jpeg",
-                ]).map((src, index) => (
-                    <img
-                        key={index}
-                        src={src}
-                        alt="scrolling"
-                        className="h-60 w-80 object-cover border-2 border-black rounded-xl 
-                                filter grayscale hover:filter-none transition-all duration-300 flex-shrink-0 mr-4"
-                    />
-                ))}
-            </motion.div>
-        </div>
-    </div>
-</div>
-
-
-
-
-
 
             <motion.section
                 className="mt-24 max-w-6xl mx-auto px-4 relative z-10" // z-10 to ensure it's above the particles
