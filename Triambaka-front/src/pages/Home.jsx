@@ -301,7 +301,6 @@ const Home = () => {
             </motion.section>
 
             {/* Stats Section */}
-
             <motion.section
                 className=" relative z-10 bg-gray-50 border-2 border-black rounded-2xl w-[100%] mx-auto min-h-[300px] flex justify-center items-center py-8 px-12 mt-16"
             >
@@ -352,34 +351,7 @@ const Home = () => {
                 </div>
             </motion.section>
 
-            <motion.section
-                className="mt-24 max-w-6xl mx-auto px-4 relative z-10" // z-10 to ensure it's above the particles
-                initial="hidden"
-                animate={mounted ? "visible" : "hidden"}
-                variants={fadeIn}
-                transition={{ duration: 0.5, delay: 0.8 }}
-            >
-                <h2 className="text-3xl font-bold text-center mb-12">Triambaka by the Numbers</h2>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-                    {[
-                        { number: "1M+", label: "Files Protected" },
-                        { number: "99.99%", label: "Uptime" },
-                        { number: "150+", label: "Countries Served" },
-                        { number: "0", label: "Successful Breaches" },
-                    ].map((stat, index) => (
-                        <motion.div
-                            key={index}
-                            className="text-center bg-gray-50 rounded-xl p-6 transition-all duration-300 ease-in-out hover:shadow-lg border-2 border-black"
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            transition={{ delay: 0.1 * index, type: "spring", stiffness: 100 }}
-                        >
-                            <div className="text-4xl font-bold mb-2">{stat.number}</div>
-                            <div className="text-gray-600">{stat.label}</div>
-                        </motion.div>
-                    ))}
-                </div>
-            </motion.section>
+
         </div>
     )
 }

@@ -3,12 +3,10 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { LayoutDashboard, Menu, Stamp, ShieldCheck, Route, Home as HomeIcon, Wallet } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
-import detectEthereumProvider from "@metamask/detect-provider";
-import Cookies from "js-cookie";
 import { useWallet } from "@/context/WalletProvider";
+import { Facebook, Twitter, Instagram } from "lucide-react";
 
 const Layout = ({ children }) => {
     const { walletAddress, connectWallet, disconnectWallet } = useWallet(); // ✅ Using Context
@@ -72,8 +70,26 @@ const Layout = ({ children }) => {
 
                 <main className="flex-grow container mx-auto px-4 py-8 mt-24">{children}</main>
 
-                <footer className="bg-gray-100 text-center py-6">
-                    © 2024 Triambaka. All rights reserved.
+                <footer className="bg-gray-100 py-6 z-50 flex items-center justify-between px-6">
+                    <div className="text-left">
+                        <a href="/terms" className="text-sm text-gray-600 hover:text-gray-900">
+                            Terms and Conditions
+                        </a>
+                    </div>
+                    <div className="text-center text-gray-700 text-sm">
+                        © 2024 Tryambaka. All rights reserved.
+                    </div>
+                    <div className="flex items-center gap-4">
+                        <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-blue-600">
+                            <Facebook className="w-6 h-6" />
+                        </a>
+                        <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-blue-400">
+                            <Twitter className="w-6 h-6" />
+                        </a>
+                        <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-pink-600">
+                            <Instagram className="w-6 h-6" />
+                        </a>
+                    </div>
                 </footer>
             </div>
         </TooltipProvider>
