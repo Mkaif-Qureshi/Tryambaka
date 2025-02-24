@@ -301,7 +301,6 @@ const Home = () => {
             </motion.section>
 
             {/* Stats Section */}
-
             <motion.section
                 className=" relative z-10 bg-gray-50 border-2 border-black rounded-2xl w-[100%] mx-auto min-h-[300px] flex justify-center items-center py-8 px-12 mt-16"
             >
@@ -352,76 +351,6 @@ const Home = () => {
                 </div>
             </motion.section>
 
-            <motion.section
-                className="mt-24 max-w-6xl mx-auto px-4 relative z-10" // z-10 to ensure it's above the particles
-                initial="hidden"
-                animate={mounted ? "visible" : "hidden"}
-                variants={fadeIn}
-                transition={{ duration: 0.5, delay: 0.8 }}
-            >
-                <h2 className="text-3xl font-bold text-center mb-12">Triambaka by the Numbers</h2>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-                    {[
-                        { number: "1M+", label: "Files Protected" },
-                        { number: "99.99%", label: "Uptime" },
-                        { number: "150+", label: "Countries Served" },
-                        { number: "0", label: "Successful Breaches" },
-                    ].map((stat, index) => (
-                        <motion.div
-                            key={index}
-                            className="text-center bg-gray-50 rounded-xl p-6 transition-all duration-300 ease-in-out hover:shadow-lg border-2 border-black"
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            transition={{ delay: 0.1 * index, type: "spring", stiffness: 100 }}
-                        >
-                            <div className="text-4xl font-bold mb-2">{stat.number}</div>
-                            <div className="text-gray-600">{stat.label}</div>
-                        </motion.div>
-                    ))}
-                </div>
-            </motion.section>
-
-            {/* CTA Section */}
-            <motion.section
-                className="text-center mt-24 py-4 bg-black relative z-10 rounded-2xl w-[100%] mx-auto min-h-[300px]  items-center " // z-10 to ensure it's above the particles
-                initial="hidden"
-                animate={mounted ? "visible" : "hidden"}
-                variants={fadeIn}
-                transition={{ duration: 0.5, delay: 1 }}
-            >
-                <div className="flex flex-col items-start ml-14 mb-20 mt-4 ">
-                <h2 className="text-3xl font-bold  text-white">Secure your digital work!</h2>
-                <h6 className="text-gray-500 font-normal mb-6">Trust us, we got you!</h6>
-                <Button
-                    asChild
-                    size="lg"
-                    className="bg-white text-black rounded-full px-8 py-6 text-lg font-semibold transition-all duration-300 ease-in-out hover:bg-gray-100"
-                >
-                    <Link to="/upload">
-                        Get Started Now
-                        <ArrowRight className="ml-2 h-5 w-5" />
-                    </Link>
-                </Button>
-                <div className=" absolute right-20 top-[20%] flex flex-col text-gray-500 space-y-2 ">
-                            <h6>About</h6>
-                            <h6>Work</h6>
-                            <h6>Contact</h6>
-                            <h6>Pricing</h6>
-                            <h6>FAQ's</h6>
-                            <h6>404</h6>
-                            {/* <h6>Testimonials</h6> */}
-                </div>
-                </div>
-                <div className=" w-full flex justify-center mt-48">
-
-                <hr style={{ border: "1px solid grey", width: "95%" }} />;
-                </div>
-                <div className="ml-14 flex text-left text-gray-500 space-x-5  w-full">
-                    <h6>© 2025 reserved</h6>
-                    <h6>All rights reserved </h6>
-                    <h6>Terms of services</h6>
-                </div>
-            </motion.section>
 
         </div>
     )
