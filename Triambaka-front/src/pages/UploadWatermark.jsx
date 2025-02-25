@@ -282,74 +282,143 @@ const UploadWatermark = () => {
 
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col justify-center items-center p-4">
-            <div className="w-full max-w-4xl bg-white rounded-2xl shadow-xl overflow-hidden">
-                <div className="md:flex">
-                    <div className="md:w-1/2 p-8">
-                        <h1 className="text-4xl font-bold mb-6">Watermark Your Image</h1>
-                        <p className="text-gray-600 mb-8">Protect your digital assets with blockchain-powered watermarking.</p>
-                        <div
-                            className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-gray-400"
-                            onClick={() => fileInputRef.current?.click()}
-                        >
-                            <input type="file" className="hidden" onChange={handleFileChange} accept="image/*" ref={fileInputRef} />
-                            <Upload className="mx-auto h-12 w-12 text-gray-400" />
-                            <span className="mt-2 block text-sm font-medium text-gray-900">
-                                {file ? file.name : "Click to upload or drag and drop"}
+        <div className="w-full max-w-4xl bg-white rounded-2xl shadow-xl overflow-hidden">
+          <div className="md:flex">
+            {/* Left Side: Upload Section */}
+            <div className="md:w-1/2 p-8">
+              <h1 className="text-4xl font-bold mb-6">Watermark Your Image</h1>
+              <p className="text-gray-600 mb-8">Protect your digital assets with blockchain-powered watermarking.</p>
+  
+              {/* Upload Box */}
+              <div
+                className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-gray-400"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <input type="file" className="hidden" onChange={handleFileChange} accept="image/*" ref={fileInputRef} />
+                <Upload className="mx-auto h-12 w-12 text-gray-400" />
+                <span className="mt-2 block text-sm font-medium text-gray-900">
+                  {file ? file.name : "Click to upload or drag and drop"}
+                </span>
+              </div>
+  
+              {/* Submit Button */}
+              <button
+                className={`w-full py-3 px-4 rounded-lg flex items-center justify-center mt-4 ${
+                  loading ? "bg-gray-400" : "bg-blue-600 hover:bg-blue-700 text-white font-bold"
+                }`}
+                disabled={loading}
+                onClick={handleButtonClick}
+              >
+                {loading ? <Spinner className="animate-spin" /> : buttonText}
+              </button>
+            </div>
+  
+            {/* Right Side: Steps & Image Preview */}
+            <div className="md:w-1/2 bg-gray-100 p-8 max-h-screen overflow-y-auto">
+              {/* Steps List */}
+              <div className="flex flex-col space-y-6">
+                {steps.map((stepObj, index) => (
+                  <motion.div
+                    key={index}
+                    className="space-y-4"
+                    initial={{ opacity: 0, x: -50 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.2 }}
+                  >
+                    {/* Step Label Bar */}
+                    <div
+                      className={`p-3 rounded-lg text-white flex items-center space-x-3 transition duration-300 ${
+                        index < step ? "bg-green-500" : index === step ? "bg-blue-500" : "bg-gray-400"
+                      }`}
+                    >
+                      <stepObj.icon className="w-5 h-5" />
+                      <span>{stepObj.label}</span>
+                    </div>
+  
+                    {/* Step Content Container */}
+                    <div className="ml-4 space-y-4">
+                      {/* Upload Image Preview */}
+                      {index === 0 && originalImageUrl && (
+                        <div className="space-y-2">
+                          <h3 className="text-sm font-medium text-gray-700">Uploaded Image:</h3>
+                          <img
+                            src={originalImageUrl || "/placeholder.svg"}
+                            alt="Original"
+                            className="w-full h-48 object-cover rounded-lg shadow-sm"
+                          />
+                        </div>
+                      )}
+  
+                      {/* Blockchain Check Result */}
+                      {index === 1 && stepResponses[1] && (
+                        <div className="p-3 bg-white rounded-lg shadow-sm">
+                          <div className="text-sm text-gray-600">{stepResponses[1]}</div>
+                        </div>
+                      )}
+  
+                      {/* Watermarked Image Preview */}
+                      {index === 2 && watermarkedImageUrl && (
+                        <div className="space-y-2">
+                          <div className="relative">
+                            <img
+                              src={watermarkedImageUrl || "/placeholder.svg"}
+                              alt="Watermarked"
+                              className="w-full h-48 object-cover rounded-lg shadow-sm"
+                            />
+                            <button
+                              onClick={() => {
+                                const link = document.createElement("a")
+                                link.href = watermarkedImageUrl
+                                link.download = "watermarked-image.png"
+                                document.body.appendChild(link)
+                                link.click()
+                                document.body.removeChild(link)
+                              }}
+                              className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-lg hover:bg-gray-100 transition-colors"
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-5 w-5 text-gray-600"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                                />
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
+                      )}
+  
+                      {/* IPFS Upload Status */}
+                      {index === 3 && stepResponses[3] && (
+                        <div className="p-3 bg-white rounded-lg shadow-sm ">
+                            <span className="block w-full">
+
+                          <div className="text-sm text-gray-600 break-all ">{stepResponses[3]}</div>
                             </span>
                         </div>
-                        <button
-                            className={`w-full py-3 px-4 rounded-lg flex items-center justify-center mt-4 ${buttonDisabled ? "bg-gray-400" : "bg-blue-600 hover:bg-blue-700 text-white font-bold"}`}
-                            disabled={buttonDisabled || loading}
-                            onClick={handleButtonClick}
-                        >
-                            {loading ? <Spinner /> : buttonText}
-                        </button>
-                    </div>
-                    <div className="md:w-1/2 bg-gray-100 p-8 max-h-screen overflow-y-auto">
-                        {originalImageUrl && (
-                            <div className="mb-8">
-                                <h2 className="text-xl font-semibold mb-4">Original Image</h2>
-                                <img
-                                    src={originalImageUrl || "/placeholder.svg"}
-                                    alt="Original"
-                                    className="w-full h-64 object-cover rounded-lg"
-                                />
-                            </div>
-                        )}
-                        <div className="flex flex-col space-y-4">
-                            {steps.map((stepObj, index) => (
-                                <motion.div
-                                    key={index}
-                                    className="space-y-2"
-                                    initial={{ opacity: 0, x: -50 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: index * 0.2 }}
-                                >
-                                    <div
-                                        className={`p-3 rounded-lg text-white flex items-center space-x-3 transition duration-300 ${index < step ? "bg-green-500" : index === step ? "bg-blue-500" : "bg-gray-400"}`}
-                                    >
-                                        <stepObj.icon className="w-5 h-5" />
-                                        <span>{stepObj.label}</span>
-                                    </div>
-                                    {stepResponses[index + 1] && (
-                                        <div className="ml-8 p-2 bg-white rounded-lg text-sm">{stepResponses[index + 1]}</div>
-                                    )}
-                                    {index === 2 && watermarkedImageUrl && (
-                                        <div className="ml-8 mt-2">
-                                            <img
-                                                src={watermarkedImageUrl || "/placeholder.svg"}
-                                                alt="Watermarked"
-                                                className="w-full h-48 object-cover rounded-lg"
-                                            />
-                                        </div>
-                                    )}
-                                </motion.div>
-                            ))}
+                      )}
+  
+                      {/* Transaction Status */}
+                      {index === 4 && stepResponses[4] && (
+                        <div className="p-3 bg-white rounded-lg shadow-sm">
+                          <div className="text-sm text-gray-600">{stepResponses[4]}</div>
                         </div>
+                      )}
                     </div>
-                </div>
+                  </motion.div>
+                ))}
+              </div>
             </div>
+          </div>
         </div>
+      </div>
     )
 }
 
