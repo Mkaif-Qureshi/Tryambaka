@@ -42,7 +42,7 @@ const Layout = ({ children }) => {
                     <nav className="container mx-auto px-4 py-4 flex justify-between items-center">
                         <Link to="/" className="flex items-center text-2xl font-bold text-primary">
                             <img src="/logo.png" alt="Logo" className="h-14 w-14 mr-1" />
-                            Triambaka
+                            Tryambaka
                         </Link>
                         <div className="hidden md:flex space-x-4">
                             {navItems.map((item) => (

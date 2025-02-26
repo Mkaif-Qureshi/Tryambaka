@@ -147,7 +147,10 @@ def extract_watermark(input_path, key, delta=None):
 
 @watermark_bp.route('/check_image', methods=['POST'])
 def check_image():
+    temp_input = None
+    temp_output = None
     try:
+        # Validate file input
         if 'image' not in request.files:
             return jsonify({"error": "No image file provided"}), 400
 
@@ -155,39 +158,95 @@ def check_image():
         if file.filename == '':
             return jsonify({"error": "No selected image file"}), 400
 
-        key = os.getenv("WATERMARK_KEY")
-        delta = 7.25
-        threshold = 0.3
+        # Save the uploaded image to a temporary file
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as temp_file:
+            temp_input = temp_file.name
+            file.save(temp_input)
 
-        with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as temp_input:
-            input_path = temp_input.name
-            file.save(input_path)
+        # Define constants
+        key = 12345               # Must match the embedding key
+        initial_delta = 7.25      # Starting delta value
+        threshold = 0.3           # BER threshold for a valid watermark
 
-        # Calculate hash of the input image
-        image_hash = calculate_image_hash(input_path)
+        # --- Dynamic Delta Selection on Uploaded Image ---
+        # This checks if the image is already watermarked.
+        best_delta = initial_delta
+        best_ber = extract_watermark(temp_input, key, initial_delta)
+        max_iterations = 10  # Try up to 10 steps
+        for i in range(max_iterations):
+            candidate_delta = initial_delta + 0.25 * (i + 1)
+            candidate_ber = extract_watermark(temp_input, key, candidate_delta)
+            if candidate_ber < best_ber:
+                best_ber = candidate_ber
+                best_delta = candidate_delta
 
-        # Step 1: Check if the image hash exists in the blockchain
+        # --- Determine if Image is Watermarked or Original ---
+        if best_ber < threshold:
+            # The image appears watermarked.
+            # Compute the hash directly on the uploaded file.
+            watermarked_hash = calculate_image_hash(temp_input)
+            used_delta = best_delta
+            final_ber = best_ber
+        else:
+            # The image is original.
+            # Embed the watermark first, then compute the hash.
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as temp_out:
+                temp_output = temp_out.name
+
+            delta = initial_delta
+            ber = extract_watermark(temp_input, key, delta)
+            # Adjust delta until the watermark BER falls below threshold.
+            while ber >= threshold:
+                embed_watermark(temp_input, temp_output, key, delta)
+                new_ber = extract_watermark(temp_output, key, delta)
+                if new_ber < threshold:
+                    break
+                delta += 0.25  # Increment delta for better embedding
+                # Optionally, you might re-run embed_watermark here if needed.
+                # For simplicity, we assume the first successful attempt is acceptable.
+                ber = new_ber
+
+            watermarked_hash = calculate_image_hash(temp_output)
+            used_delta = delta
+            final_ber = new_ber
+
+        # --- Query the Blockchain using the Watermarked Image Hash ---
         blockchain_url = "http://127.0.0.1:5000/api/blockchain/check_image_hash"
-        response = requests.get(blockchain_url, params={"image_hash": image_hash})
-
+        bc_response = requests.get(blockchain_url, params={"image_hash": watermarked_hash})
         try:
-            response_data = response.json()
+            bc_json = bc_response.json()
         except requests.exceptions.JSONDecodeError:
-            os.remove(input_path)
             return jsonify({"error": "Invalid response from blockchain API"}), 500
 
-        hash_exists = response.status_code == 200 and response_data.get("exists", False)
+        if bc_response.status_code == 200 and bc_json.get("exists", False):
+            blockchain_data = bc_json
+        elif bc_response.status_code != 200:
+            return jsonify({"error": f"Blockchain lookup failed: {bc_json}"}), 500
+        else:
+            blockchain_data = None
 
-        # Step 2: Extract BER from the image
-        ber = extract_watermark(input_path, key, delta)
-        os.remove(input_path)  # Cleanup temporary file
+        is_watermarked = final_ber < threshold
 
-        # Determine result: true if image exists in blockchain and BER is below threshold
-        is_valid = hash_exists and ber < threshold
+        response_data = {
+            "image_hash": watermarked_hash,
+            "ber": float(final_ber),
+            "delta": float(used_delta),
+            "is_watermarked": bool(is_watermarked),
+            "blockchain_data": blockchain_data,
+            "message": "Image is Watermarked" if is_watermarked else "Original Image"
+        }
+        return jsonify(response_data), 200
 
-        return jsonify({"valid": is_valid, "ber": ber, "hash_exists": hash_exists})
     except Exception as e:
+        logger.exception("Error in /check_image route")
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
+
+    finally:
+        # Cleanup temporary files
+        if temp_input and os.path.exists(temp_input):
+            os.remove(temp_input)
+        if temp_output and os.path.exists(temp_output):
+            os.remove(temp_output)
 
 
 @watermark_bp.route('/embed', methods=['POST'])
@@ -201,56 +260,43 @@ def embed():
             return jsonify({"error": "No selected image file"}), 400
         
         # Hardcoded key and initial delta
-        key = os.getenv("WATERMARK_KEY")
+        key = 12345
         delta = 7.25
         
+        # Save the uploaded image to a temporary file
         with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as temp_input:
             input_path = temp_input.name
             file.save(input_path)
 
-        # Calculate hash of the original image
-        image_hash = calculate_image_hash(input_path)
-
-        # Step 1: Check if the image hash is already in the blockchain
-        blockchain_url = "http://127.0.0.1:5000/api/blockchain/check_image_hash"  # Adjust URL if needed
-        response = requests.get(blockchain_url, params={"image_hash": image_hash})
-
-        try:
-            response_data = response.json()
-        except requests.exceptions.JSONDecodeError:
-            os.remove(input_path)
-            return jsonify({"error": "Invalid response from blockchain API"}), 500
-
-        if response.status_code == 200 and response_data.get("exists", False):
-            os.remove(input_path)
-            return jsonify({"error": "Image hash already exists in blockchain"}), 400
-        
-        elif response.status_code != 200:
-            os.remove(input_path)
-            return jsonify({"error": f"Blockchain lookup failed: {response_data}"}), 500
-
-        # Step 2: Check if the image is already watermarked
-        ber = extract_watermark(input_path, key, delta)
-        threshold = 0.3  # Adjust threshold based on testing
-        if ber < threshold:
-            os.remove(input_path)
-            return jsonify({"error": "Image is already watermarked"}), 400
-        
+        # No blockchain or watermark-presence check; we simply proceed to embed.
         with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as temp_output:
             output_path = temp_output.name
         
-        # Step 3: Adjust delta until BER is below threshold
-        while ber >= threshold:
+        # Set threshold for watermark BER
+        threshold = 0.3
+        
+        # Step 1: Embed watermark using the initial delta
+        embed_watermark(input_path, output_path, key, delta)
+        new_ber = extract_watermark(output_path, key, delta)
+        
+        # Step 2: Adjust delta until BER is below threshold (or until max iterations)
+        max_iterations = 10
+        iterations = 0
+        while new_ber >= threshold and iterations < max_iterations:
+            delta += 0.25  # Increment delta for better embedding
             embed_watermark(input_path, output_path, key, delta)
             new_ber = extract_watermark(output_path, key, delta)
-            if new_ber < threshold:
-                break
-            delta += 0.25  # Increment delta for better embedding
+            iterations += 1
 
-        # Calculate hash of the watermarked image
+        # Calculate the hash of the watermarked image
         watermarked_hash = calculate_image_hash(output_path)
         
-        response = send_file(output_path, mimetype='image/png', as_attachment=True, download_name='watermarked.png')
+        response = send_file(
+            output_path,
+            mimetype='image/png',
+            as_attachment=True,
+            download_name='watermarked.png'
+        )
         response.headers['X-BER'] = str(new_ber)
         response.headers['X-Image-Hash'] = watermarked_hash
         response.headers['X-Delta'] = str(delta)
@@ -263,7 +309,10 @@ def embed():
 
         @after_this_request
         def cleanup(response):
-            os.remove(input_path)
+            if os.path.exists(input_path):
+                os.remove(input_path)
+            # if os.path.exists(output_path):
+                # os.remove(output_path)
             return response
         
         return response

@@ -1,245 +1,232 @@
-import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
+"use client"
 
-const Dashboard = () => {
-    // User details
-    const userDetails = {
-        name: "John Doe",
-        email: "john.doe@example.com",
-        accountId: "123456789",
-    };
+import { useState, useEffect } from "react"
+import { Button } from "@/components/ui/button"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { ExternalLink, Loader2, Wallet, Download, Eye } from "lucide-react"
+import { useWallet } from "@/context/WalletProvider"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog"
+import jsPDF from "jspdf"
+import "jspdf-autotable"
 
-    // Transaction details
-    const transactions = [
-        { id: 1, date: "2024-02-01", hash: "a1b2c3d4", status: "Completed" },
-        { id: 2, date: "2024-02-05", hash: "e5f6g7h8", status: "Pending" },
-        { id: 3, date: "2024-02-10", hash: "i9j0k1l2", status: "Completed" },
-    ];
+export default function Dashboard() {
+    const { walletAddress } = useWallet()
+    const [userContent, setUserContent] = useState([])
+    const [loading, setLoading] = useState(false)
+    const [walletBalance, setWalletBalance] = useState("0.0 ETH")
+    const [selectedContent, setSelectedContent] = useState(null)
+    const [isDialogOpen, setIsDialogOpen] = useState(false)
 
-    // Watermarked files
-    const watermarkedFiles = [
-        { id: 1, name: "document.pdf", date: "2024-02-09", status: "Completed" },
-        { id: 2, name: "image.jpg", date: "2024-02-10", status: "Pending" },
-        { id: 3, name: "video.mp4", date: "2024-02-11", status: "Completed" },
-    ];
-
-    // Pending verifications
-    const pendingVerifications = [
-        { id: 1, name: "verify-doc.pdf", date: "2024-02-12", status: "In Progress" },
-        { id: 2, name: "check-image.png", date: "2024-02-13", status: "Queued" },
-    ];
-
-    // PDF generation function
-    const generatePDF = () => {
-        const doc = new jsPDF();
-
-        // Page dimensions
-        const pageWidth = doc.internal.pageSize.getWidth();
-
-        // Add logo and text in a single line
-        const logoUrl = '/logo.png';
-        const logoWidth = 10; // Width of the logo
-        const logoHeight = 10; // Height of the logo
-
-        // Calculate the total width of the logo + text
-        doc.setFontSize(17);
-        doc.setFont("helvetica", "bold");
-        const text = "Trimbaka";
-        const textWidth = doc.getStringUnitWidth(text) * doc.internal.getFontSize() / doc.internal.scaleFactor;
-
-        // Keep original total width calculation (without spacing adjustments)
-        const totalWidth = logoWidth + textWidth;
-
-        // Calculate the starting X position to center the logo and text
-        const startX = (pageWidth - totalWidth) / 2;
-
-        // Add the logo (position remains unchanged)
-        const logoY = 20;
-        doc.addImage(logoUrl, 'PNG', startX, logoY, logoWidth, logoHeight);
-
-        // Add text with LEFT SHIFT adjustment
-        const textXShift = 6; // Negative value moves text LEFT toward the logo
-        const textX = startX + logoWidth + textXShift;
-        doc.text(text, textX, logoY + logoHeight / 2 + 1.5);
-
-        // Add address below the logo and text
-        doc.setFontSize(8);
-        doc.setFont("helvetica", "normal");
-        const addressText = "123 Trimbaka Street, Trimbaka City, 123456";
-        const addressTextWidth = doc.getStringUnitWidth(addressText) * doc.internal.getFontSize() / doc.internal.scaleFactor;
-        const addressX = (pageWidth - addressTextWidth) / 2;
-        doc.text(addressText, addressX, logoY + logoHeight + 5);
-
-
-        // Report title (centered)
-        doc.setFontSize(18);
-        const reportTitle = "User & Transaction Report";
-        const reportTitleWidth = doc.getStringUnitWidth(reportTitle) * doc.internal.getFontSize() / doc.internal.scaleFactor;
-        const reportTitleX = (pageWidth - reportTitleWidth) / 2;
-        doc.text(reportTitle, reportTitleX, logoY + logoHeight + 20); // Position below the address
-
-        // User details table (vertical layout)
-        autoTable(doc, {
-            startY: logoY + logoHeight + 30, // Adjusted to bring the table closer
-            head: [["Field", "Value"]], // Table headers
-            body: [
-                ["Name", userDetails.name],
-                ["Account ID", userDetails.accountId],
-                ["Email", userDetails.email],
-            ],
-            theme: "grid",
-            headStyles: {
-                fillColor: [41, 128, 185],
-                textColor: 255,
-                fontStyle: "bold"
-            },
-            styles: {
-                cellPadding: 1.5,
-                fontSize: 10,
-            },
-            columnStyles: {
-                0: { fontStyle: "bold" }, // Make the "Field" column bold
-            },
-        });
-
-
-        // Transactions table
-        autoTable(doc, {
-            startY: logoY + logoHeight + 60, // Adjusted to bring the table closer
-            head: [["ID", "Date", "Hash Code", "Status"]],
-            body: transactions.map(t => [t.id, t.date, t.hash, t.status]),
-            theme: "grid",
-            headStyles: {
-                fillColor: [41, 128, 185],
-                textColor: 255,
-                fontStyle: "bold"
-            },
-            styles: {
-                cellPadding: 1.5,
-                fontSize: 10,
-            },
-        });
-
-        // Footer note
-        const pageCount = doc.internal.getNumberOfPages();
-        for (let i = 1; i <= pageCount; i++) {
-            doc.setPage(i);
-            doc.setFontSize(10);
-
-            // Define the note text
-            const noteText = "Note: This report has been securely generated and verified using Trimbaka’s blockchain-powered watermarking technology, ensuring authenticity and integrity.";
-
-            // Split the text into multiple lines to fit within the page width
-            const maxWidth = pageWidth - 40; // Leave 20 units margin on both sides
-            const splitText = doc.splitTextToSize(noteText, maxWidth);
-
-            // Add the note text to the bottom of the page
-            doc.text(splitText, 20, doc.internal.pageSize.height - 20); // Adjust vertical position as needed
+    useEffect(() => {
+        const fetchUserContent = async () => {
+            if (!walletAddress) return
+            try {
+                setLoading(true)
+                const response = await fetch(`http://127.0.0.1:5000/api/blockchain/get_user_content?user_address=${walletAddress}`)
+                const data = await response.json()
+                if (data.content_ids && data.content_ids.length > 0) {
+                    const contentDetails = await Promise.all(
+                        data.content_ids.map(async (id) => {
+                            const contentResponse = await fetch(`http://127.0.0.1:5000/api/blockchain/get_content?content_id=${id}`)
+                            const contentData = await contentResponse.json()
+                            return { id, ...contentData }
+                        })
+                    )
+                    setUserContent(contentDetails)
+                }
+            } catch (error) {
+                console.error("Error fetching user content:", error)
+            } finally {
+                setLoading(false)
+            }
         }
+        fetchUserContent()
+    }, [walletAddress])
 
-        doc.save("user_transaction_report.pdf");
-    };
+    const generatePDF = () => {
+        const doc = new jsPDF({ orientation: "landscape" })
+        const logoUrl = "logo.png" // Replace with actual path
+        const headerHeight = 20
+        doc.addImage(logoUrl, "PNG", 14, 10, 20, 20)
+        doc.setFontSize(18)
+        doc.text("Tryambaka", 40, 20)
+        doc.setFontSize(12)
+        doc.setFont("times", "italic")
+        doc.text("Blockchain-Powered Watermarking", 40, 26)
+        doc.setFont("times", "normal")
+        doc.setFontSize(16)
+        doc.text("Transaction Report", 14, headerHeight + 25)
+        doc.setFontSize(12)
+        doc.text(`Wallet Address: ${walletAddress}`, 14, headerHeight + 35)
+        const tableColumn = ["ID", "IPFS Hash", "Image Hash (SHA-256)", "Timestamp"]
+        const tableRows = userContent.map(content => [
+            content.id,
+            content.ipfs_hash,
+            content.sha256_hash,
+            new Date(Number.parseInt(content.timestamp) * 1000).toLocaleDateString(),
+        ])
+        doc.autoTable({
+            head: [tableColumn],
+            body: tableRows,
+            startY: headerHeight + 45,
+            styles: { fontSize: 10 },
+            columnStyles: {
+                0: { cellWidth: 10 },
+                1: { cellWidth: 110 },
+                2: { cellWidth: 125 },
+                3: { cellWidth: 22 },
+            },
+        })
+        const pageHeight = doc.internal.pageSize.height
+        doc.setFontSize(10)
+        doc.text(
+            "NOTE: This report has been securely generated and verified using Tryambaka’s blockchain-powered watermarking technology, ensuring authenticity and integrity.",
+            14,
+            pageHeight - 20,
+            { maxWidth: 250 }
+        )
+        doc.save("transactions.pdf")
+    }
 
     return (
-        <div className="space-y-8 p-6">
-            {/* Header with Download Button */}
-            <div className="flex justify-between items-center">
-                <h1 className="text-3xl font-bold">Dashboard</h1>
-                <Button
-                    onClick={generatePDF}
-                    variant="outline"
-                    className="large"
-                >
-                    Download Transaction Report
-                </Button>
-            </div>
+        <div className="space-y-6 p-6">
+            <Card className="border-none shadow-lg bg-white/80 backdrop-blur-md">
+                <CardHeader>
+                    <CardTitle className="text-xl font-bold text-primary flex items-center space-x-2">
+                        <Wallet className="h-6 w-6" />
+                        <span>Wallet Details</span>
+                    </CardTitle>
+                    <CardDescription>Your wallet information and balance</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="space-y-4">
+                        <div className="flex items-center space-x-2">
+                            <span className="font-medium">Wallet Address:</span>
+                            <span className="font-mono text-sm break-all">
+                                {walletAddress || "Not connected"}
+                            </span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                            <span className="font-medium">Balance:</span>
+                            <span className="text-sm">{walletBalance}</span>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
 
-            {/* My Watermarked Files */}
-            <section>
-                <h2 className="text-2xl font-semibold mb-4">My Watermarked Files</h2>
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>File Name</TableHead>
-                            <TableHead>Date</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Action</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {watermarkedFiles.map((file) => (
-                            <TableRow key={file.id}>
-                                <TableCell className="font-medium">{file.name}</TableCell>
-                                <TableCell>{file.date}</TableCell>
-                                <TableCell>{file.status}</TableCell>
-                                <TableCell>
-                                    <Button variant="outline" size="sm" className="mr-2">
-                                        View
-                                    </Button>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </section>
-
-            {/* Pending Verifications */}
-            <section>
-                <h2 className="text-2xl font-semibold mb-4">Pending Verifications</h2>
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>File Name</TableHead>
-                            <TableHead>Date</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Action</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {pendingVerifications.map((verification) => (
-                            <TableRow key={verification.id}>
-                                <TableCell className="font-medium">{verification.name}</TableCell>
-                                <TableCell>{verification.date}</TableCell>
-                                <TableCell>{verification.status}</TableCell>
-                                <TableCell>
-                                    <Button variant="outline" size="sm">
-                                        Check Status
-                                    </Button>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </section>
-
-            {/* Transaction History */}
-            <section>
-                <h2 className="text-2xl font-semibold mb-4">Transaction History</h2>
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>ID</TableHead>
-                            <TableHead>Date</TableHead>
-                            <TableHead>Hash Code</TableHead>
-                            <TableHead>Status</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {transactions.map((transaction) => (
-                            <TableRow key={transaction.id}>
-                                <TableCell>{transaction.id}</TableCell>
-                                <TableCell>{transaction.date}</TableCell>
-                                <TableCell>{transaction.hash}</TableCell>
-                                <TableCell>{transaction.status}</TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </section>
+            <Card className="border-none shadow-lg bg-white/80 backdrop-blur-md">
+                <CardHeader className="flex justify-between flex-row">
+                    <div>
+                        <CardTitle className="text-xl font-bold text-primary">Your Content</CardTitle>
+                        <CardDescription>All content registered by your wallet</CardDescription>
+                    </div>
+                    <Button onClick={generatePDF} variant="outline" className="flex items-center space-x-2">
+                        <Download className="h-4 w-4" />
+                        <span>Download Transactions PDF</span>
+                    </Button>
+                </CardHeader>
+                <CardContent>
+                    {!walletAddress ? (
+                        <div className="text-center py-8 text-muted-foreground">Connect your wallet to view your content</div>
+                    ) : loading ? (
+                        <div className="flex justify-center py-8">
+                            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                        </div>
+                    ) : userContent.length > 0 ? (
+                        <div className="rounded-xl overflow-hidden border border-gray-200">
+                            <div className="overflow-x-auto">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow className="bg-gray-50/50">
+                                            <TableHead>ID</TableHead>
+                                            <TableHead className="hidden md:table-cell">IPFS Hash</TableHead>
+                                            <TableHead className="hidden lg:table-cell">Image Hash (SHA-256)</TableHead>
+                                            <TableHead className="hidden sm:table-cell">Timestamp</TableHead>
+                                            <TableHead className="text-right">Actions</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {userContent.map((content) => (
+                                            <TableRow key={content.id} className="hover:bg-gray-50/50">
+                                                <TableCell className="font-medium">{content.id}</TableCell>
+                                                <TableCell className="hidden md:table-cell font-mono text-sm text-muted-foreground">
+                                                    {`${content.ipfs_hash.slice(0, 8)}...${content.ipfs_hash.slice(-6)}`}
+                                                </TableCell>
+                                                <TableCell className="hidden lg:table-cell font-mono text-sm text-muted-foreground">
+                                                    {content.sha256_hash}
+                                                </TableCell>
+                                                <TableCell className="hidden sm:table-cell text-muted-foreground">
+                                                    {new Date(Number.parseInt(content.timestamp) * 1000).toLocaleDateString()}
+                                                </TableCell>
+                                                <TableCell className="text-right flex justify-end space-x-2">
+                                                    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                                                        <DialogTrigger asChild>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                onClick={() => {
+                                                                    setSelectedContent(content)
+                                                                    setIsDialogOpen(true)
+                                                                }}
+                                                                className="hover:text-primary"
+                                                            >
+                                                                <Eye className="h-4 w-4" />
+                                                            </Button>
+                                                        </DialogTrigger>
+                                                        <DialogContent className="bg-white p-6 rounded-lg max-w-4xl">
+                                                            <DialogHeader>
+                                                                <DialogTitle>Content Details</DialogTitle>
+                                                                <DialogDescription>ID: {selectedContent?.id}</DialogDescription>
+                                                            </DialogHeader>
+                                                            {selectedContent && (
+                                                                <div className="flex flex-col md:flex-row gap-6">
+                                                                    <div className="w-full md:w-1/2">
+                                                                        <img
+                                                                            src={`https://ipfs.io/ipfs/${selectedContent.ipfs_hash}`}
+                                                                            alt="Content"
+                                                                            className="rounded-lg w-full h-auto object-cover"
+                                                                            onError={(e) => (e.target.src = "/placeholder-image.jpg")}
+                                                                        />
+                                                                    </div>
+                                                                    <div className="w-full md:w-1/2 space-y-4">
+                                                                        <div>
+                                                                            <span className="font-medium">IPFS Hash:</span>
+                                                                            <p className="font-mono text-sm break-all">{selectedContent.ipfs_hash}</p>
+                                                                        </div>
+                                                                        <div>
+                                                                            <span className="font-medium">Image Hash (SHA-256):</span>
+                                                                            <p className="font-mono text-sm break-all">{selectedContent.sha256_hash}</p>
+                                                                        </div>
+                                                                        <div>
+                                                                            <span className="font-medium">Timestamp:</span>
+                                                                            <p>{new Date(Number.parseInt(selectedContent.timestamp) * 1000).toLocaleString()}</p>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </DialogContent>
+                                                    </Dialog>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() => window.open(`https://ipfs.io/ipfs/${content.ipfs_hash}`, "_blank")}
+                                                        className="hover:text-primary"
+                                                    >
+                                                        <ExternalLink className="h-4 w-4" />
+                                                    </Button>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="text-center py-8 text-muted-foreground">No content found for your wallet</div>
+                    )}
+                </CardContent>
+            </Card>
         </div>
-    );
-};
-
-export default Dashboard;
+    )
+}

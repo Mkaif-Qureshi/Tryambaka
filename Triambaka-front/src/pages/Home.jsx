@@ -196,8 +196,8 @@ const Home = () => {
                 </div>
             </motion.section>
 
-            <div className="relative flex flex-col gap-6 py-16 overflow-hidden bg-white">
-                <h2 className="text-3xl font-bold text-center mb-8">Lagecy Artworks</h2>
+            <div className="relative flex flex-col gap-6 py-16 overflow-hidden">
+                <h2 className="text-3xl font-bold text-center mb-8">Legecy Artworks</h2>
                 <div className="flex flex-col gap-8">
                     {/* First Row - Scrolls Right to Left */}
                     <div className="flex overflow-hidden whitespace-nowrap">
