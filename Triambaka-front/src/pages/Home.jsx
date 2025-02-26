@@ -196,7 +196,7 @@ const Home = () => {
                 </div>
             </motion.section>
 
-            <div className="relative flex flex-col gap-6 py-16 overflow-hidden">
+            <div className="relative flex flex-col gap-6 py-16 overflow-hidden mt-32">
                 <h2 className="text-3xl font-bold text-center mb-8">Legecy Artworks</h2>
                 <div className="flex flex-col gap-8">
                     {/* First Row - Scrolls Right to Left */}
@@ -302,7 +302,7 @@ const Home = () => {
 
             {/* Stats Section */}
             <motion.section
-                className=" relative z-10 bg-gray-50 border-2 border-black rounded-2xl w-[100%] mx-auto min-h-[300px] flex justify-center items-center py-8 px-12 mt-16"
+                className=" relative z-10 bg-gray-50 border-2 border-black rounded-2xl w-[100%] mx-auto min-h-[300px] flex justify-center items-center py-8 px-12 mt-48 mb-20"
             >
                 {/* Horizontal Line Animation */}
                 <motion.div
