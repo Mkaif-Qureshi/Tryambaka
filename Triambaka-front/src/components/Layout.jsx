@@ -77,7 +77,7 @@ const Layout = ({ children }) => {
                         </a>
                     </div>
                     <div className="text-center text-gray-700 text-sm">
-                        © 2024 Tryambaka. All rights reserved.
+                        © 2025 Tryambaka. All rights reserved.
                     </div>
                     <div className="flex items-center gap-4">
                         <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-blue-600">
