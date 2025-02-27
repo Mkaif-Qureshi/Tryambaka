@@ -1,7 +1,6 @@
 
 node_modules/
 .env
-/src/pages/ContentRegistry_abi.json
 
 # Logs
 logs
