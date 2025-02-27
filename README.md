@@ -48,7 +48,7 @@ cd Triambaka-back
 python -m venv venv
 source venv/bin/activate  # (Windows: venv\Scripts\activate)
 pip install -r requirements.txt
-python app.py
+flask run
 ```
 
 ### 🔹 Frontend Setup
@@ -59,17 +59,13 @@ npm install
 npm run dev
 ```
 
-### 🔹 Deploy Smart Contracts
-
-```bash
-cd SmartContracts
-npx hardhat compile
-npx hardhat run scripts/deploy.js --network goerli
-```
 
 ## 🖼️ Diagrams & Flowcharts
 
+Flowchart
 ![Flowchart](Diagrams/flowchart.png)
+
+Working of DCT and QIM
 ![DCT & QIM Working](Diagrams/DCT_QIM.gif)
 
 ## 🔥 Future Enhancements
